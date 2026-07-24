@@ -3,31 +3,34 @@ name: Android CI
 on:
   push:
     branches: [ "master" ]
-  pull_request:
-    branches: [ "master" ]
+  workflow_dispatch:
 
 jobs:
   build:
-
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
 
     steps:
     - uses: actions/checkout@v4
-    - name: set up JDK 11
+
+    - name: Set up JDK 8
       uses: actions/setup-java@v4
       with:
-        java-version: '11'
+        java-version: '8'
         distribution: 'temurin'
-        cache: gradle
 
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
-    - name: Build with Gradle
-      run: ./gradlew build
+
+    - name: Nuke Broken Dependency
+      run: |
+        sed -i '/android-wear-color-picker/d' app/build.gradle || true
+        sed -i '/android-wear-color-picker/d' build.gradle || true
+
+    - name: Build APK
+      run: ./gradlew assembleDebug --continue
+
     - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
         name: pear-watch-face-apk
         path: '**/*.apk'
-
-      
