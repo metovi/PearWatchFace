@@ -1,3 +1,4 @@
+
 name: Android CI
 
 on:
@@ -21,10 +22,14 @@ jobs:
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
 
-    - name: Nuke Broken Dependency
+    - name: Clean Broken References from Code
       run: |
+        # build.gradle içinden kütüphaneyi sil
         sed -i '/android-wear-color-picker/d' app/build.gradle || true
         sed -i '/android-wear-color-picker/d' build.gradle || true
+        
+        # Java/Kotlin dosyalarındaki kütüphane çağrılarını temizle
+        find app/src/main/java -type f -exec sed -i '/org.jraf.android.androidwearcolorpicker/d' {} + || true
 
     - name: Build APK
       run: ./gradlew assembleDebug --continue
